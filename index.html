@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinder Tippen - Bilder (DE)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>Kinder Tippen</h1>
+
+    <section class="card">
+      <div class="image-wrap">
+        <img id="questionImage" src="" alt="Bild" />
+      </div>
+
+      <div class="prompt">
+        <p>Was ist das?</p>
+      </div>
+
+      <div id="answerBoxes" class="answer-boxes"></div>
+
+      <input
+        id="answerInput"
+        type="text"
+        placeholder="Tippe das Wort auf Deutsch"
+        autocomplete="off"
+        spellcheck="false"
+      />
+
+      <div class="buttons">
+        <button id="checkBtn">Prüfen</button>
+        <button id="nextBtn">Nächstes</button>
+      </div>
+
+      <p id="feedback" class="feedback"></p>
+    </section>
+  </main>
+
+   <script src="app.js"></script>
+</body>
+</html>
