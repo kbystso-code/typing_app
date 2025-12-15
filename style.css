@@ -118,3 +118,11 @@ button#nextBtn {
   background: transparent;
   width: 16px;
 }
+
+/* 追加：カウンター表示 */
+.counter {
+  text-align: center;
+  font-size: 1.05rem;
+  margin: 0 0 14px;
+  color: #333;
+}
