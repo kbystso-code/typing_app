@@ -11,7 +11,16 @@
     <h1>Kinder Tippen</h1>
 
     <!-- 追加：カウンター -->
-    <p id="wordCounter" class="counter">Wörter: 0</p>
+    <p class="counter">
+      <span id="wordCounter">Wörter: 0</span>
+      <span id="correctCounter">Richtig: 0</span>
+      <span id="wrongCounter">Falsch: 0</span>
+    </p>
+
+    <label class="sound-toggle">
+      <input type="checkbox" id="soundToggle" checked />
+      Sound
+    </label>
 
     <section class="card">
       <div class="image-wrap">
@@ -37,7 +46,6 @@
 
       <div class="buttons">
         <button id="checkBtn">Prüfen</button>
-        <button id="nextBtn">Nächstes</button>
       </div>
 
       <p id="feedback" class="feedback"></p>

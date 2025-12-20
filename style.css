@@ -121,10 +121,14 @@ button#nextBtn {
 
 /* 追加：カウンター表示 */
 .counter {
-  text-align: center;
-  font-size: 1.05rem;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  align-items: center;
   margin: 0 0 14px;
+  font-size: 1.05rem;
   color: #333;
+  flex-wrap: wrap; /* 画面が狭い場合の折り返し（iPadでも安全） */
 }
 
 .credits {
@@ -134,3 +138,12 @@ button#nextBtn {
   opacity: 0.75;
 }
 .credits a { text-decoration: underline; }
+
+.sound-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 14px;
+  user-select: none;
+}

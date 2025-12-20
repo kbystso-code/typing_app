@@ -5,12 +5,15 @@ let questions = [];
 const questionImage = document.getElementById("questionImage");
 const answerInput = document.getElementById("answerInput");
 const checkBtn = document.getElementById("checkBtn");
-const nextBtn = document.getElementById("nextBtn");
 const feedback = document.getElementById("feedback");
 const answerBoxes = document.getElementById("answerBoxes");
+const soundToggle = document.getElementById("soundToggle");
+
 
 // 追加：カウンター表示
 const wordCounter = document.getElementById("wordCounter");
+const correctCounter = document.getElementById("correctCounter");
+const wrongCounter = document.getElementById("wrongCounter");
 
 // 2) 状態
 let currentIndex = 0;
@@ -20,15 +23,21 @@ let attemptPhase = 1;           // 1回目: ヒントあり, 2回目: ヒント�
 
 // 追加：タイプした単語数（= フェーズ2まで完了した単語数）
 let typedWordCount = 0;
+let correctCount = 0;    // Richtig（フェーズ2の正解数）
+let wrongCount = 0;      // Falsch（フェーズ2の誤答数）
 
 // ラウンド用の順序 + 復習キュー
 let baseOrder = [];             // ベースとなるランダム順（問題インデックスの配列）
 let basePos = 0;                // baseOrder の次に読む位置
 let reviewQueue = [];           // 間違えた問題のインデックスをためておくキュー
 
-function updateWordCounter() {
-  if (!wordCounter) return;
-  wordCounter.textContent = `Wörter: ${typedWordCount}`;
+let soundEnabled = true;
+let audioCtx = null;
+
+function updateCounters() {
+  if (wordCounter) wordCounter.textContent = `Wörter: ${typedWordCount}`;
+  if (correctCounter) correctCounter.textContent = `Richtig: ${correctCount}`;
+  if (wrongCounter) wrongCounter.textContent = `Falsch: ${wrongCount}`;
 }
 
 // 3) ユーティリティ：配列シャッフル
@@ -59,6 +68,49 @@ function ensureBaseOrder() {
     makeNewBaseOrder();
   }
 }
+
+// サウンド関数を追加
+function ensureAudio() {
+  if (!soundEnabled) return;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+}
+
+function playTone(freq, durationSec, type, gainValue) {
+  if (!soundEnabled) return;
+  ensureAudio();
+  if (!audioCtx) return;
+
+  const t0 = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(gainValue, t0 + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durationSec);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(t0);
+  osc.stop(t0 + durationSec);
+}
+
+function playKeyClick() { playTone(1800, 0.02, "square", 0.04); }
+function playBackspace() { playTone(500, 0.03, "square", 0.03); }
+function playSuccess() {
+  playTone(880, 0.07, "sine", 0.05);
+  setTimeout(() => playTone(1320, 0.07, "sine", 0.05), 70);
+}
+function playError() { playTone(180, 0.12, "sawtooth", 0.03); }
+
 
 // ベース順から 1 問選ぶ（可能なら avoidIndex を避ける）
 function pickFromBaseOrder(avoidIndex) {
@@ -145,8 +197,10 @@ async function init() {
 
     // 追加：カウンター初期化
     typedWordCount = 0;
-    updateWordCounter();
-
+    correctCount = 0;
+    wrongCount = 0;
+    updateCounters();
+    
     makeNewBaseOrder();
     currentIndex = pickFromBaseOrder(null);
     attemptPhase = 1;
@@ -207,6 +261,7 @@ function loadQuestion(index) {
   updateAnswerBoxesFromInput();
 
   hasCheckedCurrent = false;
+  updateActionButtonLabel();
 
   answerInput.focus();
   answerInput.setSelectionRange(
@@ -223,38 +278,80 @@ function normalize(text) {
     .toLowerCase();
 }
 
+function handleAction() {
+  if (!hasCheckedCurrent) {
+    checkAnswer();
+  } else {
+    nextQuestion();
+  }
+}
+
 // 8) 正誤判定
 function checkAnswer() {
   if (!questions.length) return;
 
-  // 追加：同じ問題で判定を繰り返してもカウンターが増えないようにする
+  // 同じフェーズで二重カウントしない
   if (hasCheckedCurrent) return;
 
   const q = questions[currentIndex];
   const user = normalize(answerInput.value);
-
   const ok = q.answers.some((a) => normalize(a) === user);
 
   if (ok) {
     feedback.textContent = "Richtig!";
+    if (typeof playSuccess === "function") playSuccess();
   } else {
     feedback.textContent = `Nicht ganz... Richtige Antwort: ${q.answers[0]}`;
+    if (typeof playError === "function") playError();
 
     // フェーズ2で間違えたら復習キューに2回
-    if (attemptPhase === 2) {
+    if (Number(attemptPhase) === 2) {
       reviewQueue.push(currentIndex);
       reviewQueue.push(currentIndex);
     }
   }
 
-  // 追加：フェーズ2で判定したら「単語をタイプした数」を +1
-  if (attemptPhase === 2) {
+  // 案1：フェーズ2の判定結果だけを集計
+  if (Number(attemptPhase) === 2) {
     typedWordCount++;
-    updateWordCounter();
+    if (ok) {
+      correctCount++;
+    } else {
+      wrongCount++;
+    }
+    if (typeof updateCounters === "function") updateCounters();
   }
 
   hasCheckedCurrent = true;
+
+  // 1ボタン化しているなら、表示を Prüfen / Nächstes に切替
+  if (typeof updateActionButtonLabel === "function") updateActionButtonLabel();
 }
+
+  function handleAction() {
+  if (!hasCheckedCurrent) {
+    checkAnswer();
+  } else {
+    nextQuestion();
+  }
+}
+
+function updateActionButtonLabel() {
+  // 判定前：Prüfen / 判定後：Nächstes
+  checkBtn.textContent = hasCheckedCurrent ? "Nächstes" : "Prüfen";
+  // もし表記を Pruefen/Naechstes にしたい場合：
+  // checkBtn.textContent = hasCheckedCurrent ? "Naechstes" : "Pruefen";
+}
+
+  // 追加：フェーズ2で判定したら「単語をタイプした数」を +1
+  if (attemptPhase === 2) {
+    typedWordCount++;
+    updateCounters();
+  }
+
+  hasCheckedCurrent = true;
+  updateActionButtonLabel();
+
 
 // 9) 次の問題へ
 function nextQuestion() {
@@ -286,16 +383,41 @@ function updateAnswerBoxesFromInput() {
 }
 
 // 11) イベント
-checkBtn.addEventListener("click", checkAnswer);
-nextBtn.addEventListener("click", nextQuestion);
+checkBtn.addEventListener("click", handleAction);
+
+
+// ★ここに追加（トグル反映）
+if (soundToggle) {
+  soundEnabled = soundToggle.checked;
+  soundToggle.addEventListener("change", () => {
+    soundEnabled = soundToggle.checked;
+    if (soundEnabled) ensureAudio();
+  });
+}
 
 answerInput.addEventListener("keydown", (e) => {
+  // キーリピート（押しっぱなし）で音が連打されるのを避ける
+  if (e.repeat) return;
+
+  // 修飾キー付きは音を鳴らさない（Cmd+C など）
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  // Backspace
+  if (e.key === "Backspace") {
+    playBackspace();
+    return; // 入力処理はブラウザに任せる
+  }
+
+  // Enter（判定→次へ）
   if (e.key === "Enter") {
-    if (!hasCheckedCurrent) {
-      checkAnswer();
-    } else {
-      nextQuestion();
-    }
+    handleAction();
+    return;
+  }
+
+  // 1文字キー（文字・数字・記号・スペース等）
+  // iPad外付けキーボードでは e.key が "a" や "ä" や " " のようになります
+  if (typeof e.key === "string" && e.key.length === 1) {
+    playKeyClick();
   }
 });
 
@@ -303,3 +425,8 @@ answerInput.addEventListener("input", updateAnswerBoxesFromInput);
 
 // 12) 初期化
 document.addEventListener("DOMContentLoaded", init);
+
+document.addEventListener("pointerdown", () => {
+  ensureAudio();
+}, { once: true });
+
