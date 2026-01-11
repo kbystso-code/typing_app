@@ -9,16 +9,33 @@ body {
   color: #111;
 }
 
-.app {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+html, body {
+  height: 100%;
+  margin: 0;
 }
 
+body {
+  overflow: hidden; /* 画面全体のスクロールを基本的に出さない */
+}
+
+.app {
+  /* iOS Safari 対策：アドレスバーで高さが変動しても収まる単位を使う */
+  height: 100svh;
+  height: 100dvh; /* 対応ブラウザではこちらが優先 */
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+
+  padding: 10px 12px;
+}
+
+/* タイトル等の上下余白を詰める */
 h1 {
-  text-align: center;
-  margin: 8px 0 24px;
-  font-size: 2rem;
+  margin: 6px 0 4px;
+  font-size: clamp(18px, 2.2vw, 26px);
 }
 
 .card {
@@ -48,13 +65,24 @@ h1 {
   margin: 0 0 14px;
 }
 
+/* 入力欄 */
 #answerInput {
-  width: 100%;
-  font-size: 1.2rem;
-  padding: 14px 12px;
-  border-radius: 10px;
-  border: 1px solid #d8dbe5;
-  outline: none;
+  font-size: clamp(16px, 2.0vw, 22px);
+  padding: 8px 10px;
+}
+
+#questionImage {
+  display: block;
+  margin: 0 auto;
+
+  max-width: 100%;
+  height: auto;
+
+  /* 縦に大きくなりすぎるのを防ぐ：iPad横向き対策 */
+  max-height: 32svh;
+  max-height: 32dvh;
+
+  object-fit: contain;
 }
 
 #answerInput:focus {
@@ -67,6 +95,14 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 14px;
+}
+
+/* 文字マス：画面幅に合わせて縮む */
+.box {
+  width: clamp(24px, 3.0vw, 40px);
+  height: clamp(28px, 3.0vw, 44px);
+  line-height: clamp(28px, 3.0vw, 44px);
+  font-size: clamp(16px, 2.0vw, 22px);
 }
 
 button {
@@ -83,11 +119,10 @@ button#nextBtn {
   background: #4b6bff;
 }
 
-.feedback {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-top: 16px;
-  min-height: 1.5em;
+/* フィードバックの余白を詰める */
+#feedback {
+  margin: 4px 0 0;
+  font-size: clamp(14px, 1.6vw, 18px);
 }
 
 /* 入力文字数が分かるようにする四角の枠 */
@@ -119,16 +154,14 @@ button#nextBtn {
   width: 16px;
 }
 
-/* 追加：カウンター表示 */
+/* 上部カウンター類 */
 .counter {
+  margin: 0 0 6px;
   display: flex;
   justify-content: center;
-  gap: 16px;
-  align-items: center;
-  margin: 0 0 14px;
-  font-size: 1.05rem;
-  color: #333;
-  flex-wrap: wrap; /* 画面が狭い場合の折り返し（iPadでも安全） */
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: clamp(14px, 1.6vw, 18px);
 }
 
 .credits {
@@ -146,4 +179,20 @@ button#nextBtn {
   align-items: center;
   margin: 0 0 14px;
   user-select: none;
+}
+
+@media (orientation: landscape) {
+  .app {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  #questionImage {
+    max-height: 28svh;
+    max-height: 28dvh;
+  }
+
+  h1 {
+    margin: 4px 0 2px;
+  }
 }
