@@ -196,3 +196,25 @@ button#nextBtn {
     margin: 4px 0 2px;
   }
 }
+
+.counter-reset {
+  font-size: clamp(12px, 1.4vw, 16px);
+  padding: 6px 12px;
+
+  border: 1px solid #6aa86a;
+  border-radius: 10px;
+
+  background: #dff3df;  /* 薄い緑 */
+  color: #000;          /* 黒文字 */
+
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.counter-reset:hover {
+  background: #cfeccc;  /* 少し濃く */
+}
+
+.counter-reset:active {
+  transform: translateY(1px);
+}

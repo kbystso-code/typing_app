@@ -14,6 +14,7 @@ const soundToggle = document.getElementById("soundToggle");
 const wordCounter = document.getElementById("wordCounter");
 const correctCounter = document.getElementById("correctCounter");
 const wrongCounter = document.getElementById("wrongCounter");
+const resetCountersBtn = document.getElementById("resetCountersBtn");
 
 // 2) 状態
 let currentIndex = 0;
@@ -38,6 +39,13 @@ function updateCounters() {
   if (wordCounter) wordCounter.textContent = `Wörter: ${typedWordCount}`;
   if (correctCounter) correctCounter.textContent = `Richtig: ${correctCount}`;
   if (wrongCounter) wrongCounter.textContent = `Falsch: ${wrongCount}`;
+}
+
+function resetCounters() {
+  typedWordCount = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  updateCounters();
 }
 
 // 3) ユーティリティ：配列シャッフル
@@ -384,7 +392,9 @@ function updateAnswerBoxesFromInput() {
 
 // 11) イベント
 checkBtn.addEventListener("click", handleAction);
-
+if (resetCountersBtn) {
+  resetCountersBtn.addEventListener("click", resetCounters);
+}
 
 // ★ここに追加（トグル反映）
 if (soundToggle) {
