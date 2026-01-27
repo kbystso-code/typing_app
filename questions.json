@@ -293,7 +293,7 @@
   {"img": "tongue.png", "answers": ["die Zunge"]},
   {"img": "tooth.png", "answers": ["der Zahn"]},
   {"img": "bullseye.png", "answers": ["die Zielscheibe"]},
-  {"img": "diamond_suit.png", "answers": ["das Karo (Kartenfarbe)"]},
+  {"img": "diamond_suit.png", "answers": ["das Karo"]},
   {"img": "game_die.png", "answers": ["der Würfel"]},
   {"img": "heart_suit.png", "answers": ["das Herz"]},
   {"img": "kite.png", "answers": ["der Drachen"]},
