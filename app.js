@@ -34,11 +34,14 @@ let reviewQueue = [];           // 間違えた問題のインデックスをた
 
 let soundEnabled = true;
 let audioCtx = null;
+const KIDS_APP_PROGRESS_KEY = "kids-app-study-progress-v1";
+const KIDS_APP_APP_ID = "typing";
 
 function updateCounters() {
   if (wordCounter) wordCounter.textContent = `Wörter: ${typedWordCount}`;
   if (correctCounter) correctCounter.textContent = `Richtig: ${correctCount}`;
   if (wrongCounter) wrongCounter.textContent = `Falsch: ${wrongCount}`;
+  reportKidsAppProgress(correctCount);
 }
 
 function resetCounters() {
@@ -46,6 +49,30 @@ function resetCounters() {
   correctCount = 0;
   wrongCount = 0;
   updateCounters();
+}
+
+function getKidsAppTodayKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function reportKidsAppProgress(correct) {
+  try {
+    const today = getKidsAppTodayKey();
+    const raw = JSON.parse(localStorage.getItem(KIDS_APP_PROGRESS_KEY) || "{}");
+    raw[today] ??= {};
+
+    const prev = Number(raw[today][KIDS_APP_APP_ID]?.correct) || 0;
+    raw[today][KIDS_APP_APP_ID] = {
+      correct: Math.max(prev, Math.max(0, Math.floor(Number(correct) || 0))),
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(KIDS_APP_PROGRESS_KEY, JSON.stringify(raw));
+  } catch {}
 }
 
 // 3) ユーティリティ：配列シャッフル
